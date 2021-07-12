@@ -1,0 +1,172 @@
+---
+title: "LA-report"
+author: "Praveen, Rishina"
+date: "7/12/2021"
+output:
+  word_document: 
+    toc: yes
+    fig_caption: yes
+    keep_md: yes
+  pdf_document: 
+    toc: yes
+    number_sections: yes
+    fig_caption: yes
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+opts_chunk$set(echo = TRUE)
+```
+
+# EXPLORATORY DATA ANALYSIS
+
+
+We start with importing our data set and storing it in data frame "data", using read.csv function.
+
+```{r}
+data <- read.csv("C:\\Users\\LENOVO\\OneDrive\\Desktop\\praveen\\EDA\\LA-1\\USA Covid Data.csv", header = TRUE, sep = ",")
+
+show(data)
+```
+
+
+This data set we are working on is state-wise stats for Covid-19 in USA. The data contains the several stats like active cases, total cases, total recovery etc.
+
+to make our data more rich, we will add a few more columns, based on our need.
+
+```{r}
+
+f_data <- mutate(data, Percent_Death = (data$Total.Deaths*100)/data$Total.Cases)
+f_data <- mutate(f_data, Percent.Recovered = (data$Total.Recovered*100)/data$Total.Cases)
+
+show(f_data)
+
+```
+
+Now, we will add values at places that have no values, except in the 2 columns that we have manually added. We add the mean of that column.
+
+```{r}
+
+f_data$Total.Recovered[is.na(f_data$Total.Recovered)]<- mean(f_data$Total.Recovered,na.rm=TRUE)
+
+f_data$Active.Cases[is.na(f_data$Active.Cases)]<- mean(f_data$Active.Cases,na.rm=TRUE)
+
+show(f_data)
+
+```
+
+Now we summarise our data using summary method, to check the max, min, mean, median etc values of different columns.
+
+```{r}
+summary(f_data)
+```
+
+We make important observations like mean death % is around 1.6 and over 85 % of all patients have recovered.
+
+
+we now check the total cases, total active cases, total recovered cases and total deaths across USA 
+
+```{r}
+sum(f_data$Total.Cases)
+sum(f_data$Active.Cases)
+sum(f_data$Total.Recovered)
+sum(f_data$Total.Deaths)
+
+```
+
+Similarly, we now check the mean cases, mean active cases, mean recovered cases and mean deaths across USA. 
+
+```{r}
+mean(f_data$Total.Cases)
+mean(f_data$Active.Cases)
+mean(f_data$Total.Recovered)
+mean(f_data$Total.Deaths)
+```
+
+We now check the top 5 and least 5 states in terms of active cases and total deaths.
+
+```{r}
+f_data %>% rownames_to_column() %>% top_n(-5, Active.Cases) %>% pull("State","Active.Cases")
+
+f_data %>% rownames_to_column() %>% top_n(5, Active.Cases) %>% pull("State","Active.Cases")
+
+f_data %>% rownames_to_column() %>% top_n(-5, Total.Deaths) %>% pull("State","Total.Deaths")
+
+f_data %>% rownames_to_column() %>% top_n(5, Total.Deaths) %>% pull("State","Total.Deaths")
+
+
+```
+Here we can observe that California has most number of active cases, and has had maximum deaths.While Montana has least no of active cases, and Alaska he least no of total deaths.
+
+\newpage
+
+# PLOTS
+
+## Histograms
+
+
+```{r}
+hist(f_data$Total.Cases)
+```
+
+in the above figure we see frequency of states having total cases in distinct half million ranges. 
+`NOTE`: 1e+06 = 1000000
+
+we will now observe some other histograms on available stats.
+
+
+```{r}
+hist(f_data$Active.Cases)
+```
+
+
+```{r}
+hist(f_data$Total.Tests)
+```
+
+
+```{r}
+hist(f_data$Percent.Recovered)
+```
+```{r}
+hist(f_data$Death.1.mil.population)
+```
+
+\newpage
+## GGplots
+
+Next we move on to observe several state wise stats using ggplot. we will use bar representation and point representation alternatively to observe.
+
+```{r fig.width=10,fig.height=11}
+ggplot(f_data, aes(x = Total.Recovered, y = State, col = State, size = Total.Recovered)) + geom_point()
+```
+
+```{r fig.width=10,fig.height=11}
+ggplot(f_data, aes(x = Total.Deaths, y = State, col = State, fill = State)) + geom_bar(stat = "identity")
+```
+
+
+
+```{r fig.width=10,fig.height=11}
+ggplot(f_data, aes(x = Total.Tests, y = State, col = State, fill = State)) + geom_bar(stat = "identity")
+```
+
+
+```{r fig.width=10,fig.height=11}
+ggplot(f_data, aes(x = Tests.1.mil.population, y = State, col = State, fill = State)) + geom_bar(stat = "identity")
+```
+
+
+Next we see the percentage deaths and recovered in each state
+
+```{r fig.width=10,fig.height=11}
+ggplot(f_data, aes(x = Percent_Death, y = State, col = State, size = Percent_Death)) + geom_point()
+```
+
+
+
+
+
